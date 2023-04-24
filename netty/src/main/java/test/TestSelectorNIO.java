@@ -41,6 +41,7 @@ public class TestSelectorNIO {
                 SelectionKey key = iterator.next();
                 //连接事件
                 if(key.isAcceptable()){
+                    //在这里可以创建线程异步处理
                     ServerSocketChannel channel = (ServerSocketChannel)key.channel();
                     //获取客户端连接
                     SocketChannel socket = channel.accept();
@@ -52,6 +53,7 @@ public class TestSelectorNIO {
                 }
                 //读事件
                 if(key.isReadable()){
+                    //在这里可以创建线程异步处理
                     SocketChannel socket = (SocketChannel)key.channel();
                     ByteBuffer buffer = ByteBuffer.allocate(128);
                     int len = socket.read(buffer);
