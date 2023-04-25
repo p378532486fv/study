@@ -2,9 +2,15 @@ package chat;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.CharsetUtil;
+import io.netty.util.concurrent.GlobalEventExecutor;
+
+import java.util.Iterator;
 
 /**
  * @ClassName NettyServerHandler
@@ -15,6 +21,35 @@ import io.netty.util.CharsetUtil;
  */
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
+    private static ChannelGroup CHANNEL_GROUP = new DefaultChannelGroup("ChannelGroups", GlobalEventExecutor.INSTANCE);
+
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        Channel channel = ctx.channel();
+        String clientName = channel.remoteAddress().toString();
+        //服务器端提示XXX进入聊天室
+        System.out.println(clientName+"已进入聊天室");
+        //广播到所有聊天室内的客户端
+        CHANNEL_GROUP.writeAndFlush(clientName+"已进入聊天室");
+        //将这个客户端加入channel集
+        CHANNEL_GROUP.add(channel);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        Channel channel = ctx.channel();
+        String clientName = channel.remoteAddress().toString();
+        //服务器端提示XXX离开聊天室
+        System.out.println(clientName+"离开聊天室");
+        //把这个客户端从channel集中去除
+        CHANNEL_GROUP.remove(channel);
+        //广播到所有聊天室内的客户端
+        CHANNEL_GROUP.writeAndFlush(clientName+"离开聊天室");
+    }
+
     /**
      * 读取客户端发送的数据
      *
@@ -24,35 +59,20 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println("服务器读取线程 " + Thread.currentThread().getName());
-        //Channel channel = ctx.channel();
-        //ChannelPipeline pipeline = ctx.pipeline(); //本质是一个双向链接, 出站入站
+        Channel channel = ctx.channel();
+        //服务器读取信息
         //将 msg 转成一个 ByteBuf，类似NIO 的 ByteBuffer
-        ByteBuf buf = (ByteBuf) msg;
-        System.out.println("客户端发送消息是:" + buf.toString(CharsetUtil.UTF_8));
+//        ByteBuf buf = (ByteBuf) msg;
+        System.out.println(channel.remoteAddress().toString()+"：" + (String)msg);
+
+        Iterator<Channel> iterator = CHANNEL_GROUP.iterator();
+        while(iterator.hasNext()){
+            Channel next = iterator.next();
+            if(channel != next){
+                next.writeAndFlush(channel.remoteAddress().toString()+"：" + (String)msg);
+            }
+        }
     }
 
-    /**
-     * 数据读取完毕处理方法
-     *
-     * @param ctx
-     * @throws Exception
-     */
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        ByteBuf buf = Unpooled.copiedBuffer("HelloClient", CharsetUtil.UTF_8);
-        ctx.writeAndFlush(buf);
-    }
 
-    /**
-     * 处理异常, 一般是需要关闭通道
-     *
-     * @param ctx
-     * @param cause
-     * @throws Exception
-     */
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        ctx.close();
-    }
 }

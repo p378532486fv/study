@@ -1,12 +1,17 @@
 package chat;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
+
+import java.util.Scanner;
 
 /**
  * @ClassName NettyClient
@@ -30,14 +35,24 @@ public class NettyClient {
                         @Override
                         protected void initChannel(SocketChannel channel) throws Exception {
                             //加入处理器
+                            channel.pipeline().addLast("encoder",new StringEncoder());
+                            channel.pipeline().addLast("decoder",new StringDecoder());
                             channel.pipeline().addLast(new NettyClientHandler());
                         }
                     });
-            System.out.println("netty client start");
             //启动客户端去连接服务器端
             ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 9000).sync();
+            Channel channel = channelFuture.channel();
+            System.out.println("已进入聊天室");
+            //从控制台循环输入
+            Scanner scanner = new Scanner(System.in);
+            while(scanner.hasNextLine()){
+                String msg = scanner.nextLine();
+                channel.writeAndFlush(msg);
+            }
+
             //对关闭通道进行监听
-            channelFuture.channel().closeFuture().sync();
+//            channelFuture.channel().closeFuture().sync();
         } finally {
             group.shutdownGracefully();
         }

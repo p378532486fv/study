@@ -8,6 +8,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 
 /**
  * @ClassName NettyServer
@@ -36,11 +38,13 @@ public class NettyServer {
 
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline().addLast("encoder",new StringEncoder());
+                            ch.pipeline().addLast("decoder",new StringDecoder());
                             //对workerGroup的SocketChannel设置处理器
                             ch.pipeline().addLast(new NettyServerHandler());
                         }
                     });
-            System.out.println("netty server start。。");
+            System.out.println("聊天室创建成功！！！");
             //绑定一个端口并且同步, 生成了一个ChannelFuture异步对象，通过isDone()等方法可以判断异步事件的执行情况
             //启动服务器(并绑定端口)，bind是异步操作，sync方法是等待异步操作执行完毕
             ChannelFuture cf = bootstrap.bind(9000).sync();
