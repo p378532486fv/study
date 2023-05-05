@@ -1,14 +1,11 @@
-package chat;
+package handlepackage;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.Iterator;
@@ -20,7 +17,7 @@ import java.util.Iterator;
  * @Date 2023/4/24 16:02
  * @Version 1.0
  */
-public class NettyServerHandler extends SimpleChannelInboundHandler<String> {
+public class HandlePackageServerHandler extends SimpleChannelInboundHandler<String> {
 
     private static ChannelGroup CHANNEL_GROUP = new DefaultChannelGroup("ChannelGroups", GlobalEventExecutor.INSTANCE);
 
@@ -70,7 +67,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<String> {
         while(iterator.hasNext()){
             Channel next = iterator.next();
             if(channel != next){
-                next.writeAndFlush(channel.remoteAddress().toString()+"：" + msg);
+                next.writeAndFlush(channel.remoteAddress().toString()+"：" + msg+"_");
             }
         }
     }

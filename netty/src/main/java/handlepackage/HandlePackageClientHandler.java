@@ -1,11 +1,8 @@
-package chat;
+package handlepackage;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.util.CharsetUtil;
 
 /**
  * @ClassName NettyClientHandler
@@ -14,7 +11,7 @@ import io.netty.util.CharsetUtil;
  * @Date 2023/4/24 16:03
  * @Version 1.0
  */
-public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
+public class HandlePackageClientHandler extends SimpleChannelInboundHandler<String> {
 
 
     //当通道有读取事件时会触发，即服务端发送数据给客户端
